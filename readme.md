@@ -25,6 +25,7 @@ scraper.use(animebam);
 scraper.search('Haikyuu', 'animebam').then(function (results) {
   scraper.fetchSeries(results[0]).then(function(anime) {
     scraper.fetchVideo(anime.episodes[0]).then(function(video) {
+      console.log(video);
       // Video is a list of direct video links and quality labels.
     })
   });
