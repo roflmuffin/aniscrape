@@ -9,18 +9,24 @@
   // This function must return search results based on query
   //
   // callback(null, body)
-  page: function (query, callback) {
-    // Visit http://website.com/search?query=query, return body
+  page: function (query) {
+    // Must return a promise that returns a body based on query
   },
 
   // You can also specify search as a string
   // We will just run a GET request on it and return the body
   page: 'http://animewebsite.com/list',
 
+  // Another option is to supply the url and param name to perform a GET query
+  // Below is the equivalent of http://animewebsite/search?name=AnimeName
+  page: {url: 'http://animewebsite/search', param: 'name'}
+
+  // NOT IMPLEMENTED
   // This function must return a list of jQuery objects that represent a search result item
   //
   // $ = Cheerio page object
   // body = Raw page body
+  // NOT IMPLEMENTED
   list: function ($, body) {
     return $(".row-item")
   },
@@ -39,10 +45,6 @@
     url: function (el) {
       return el.attr('href').text()
     }
-    // Optional data field
-    subtitled: function (el) {
-      return el.find(".subbed").text()
-    }
   }
 }
 ```
@@ -50,10 +52,12 @@
 ## Anime Page Structure
 ```js
 {
+  // NOT IMPLEMENTED
   // This function must return a list of jQuery objects that represent a search result item
   //
   // $ = Cheerio page object
   // body = Raw page body
+  // NOT IMPLEMENTED
   list: function ($, body) {
     return $(".row-item")
   },
@@ -69,6 +73,9 @@
     },
     url: function (el) {
       return el.attr('href').text()
+    },
+    number: function (el) {
+      return el.find('.episode-name').text().match(/(?=[^\s]*$)\d+/)[0]
     }
   }
 }
@@ -77,10 +84,10 @@
 ## Episode Page Structure
 ```js
 {
-  // From this method you must return an array of objects {name: '', url: ''}
+  // From this method you must return an array of objects {label: '', url: ''}
   // That describe video link qualities and url
   //
-  // {name: '480p', url: 'http://video.com/file.mp4'}
+  // {label: '480p', url: 'http://video.com/file.mp4'}
   episode: function ($, body) {
     // Because episode pages vary greatly we request that 
     // you parse the video urls manually.
