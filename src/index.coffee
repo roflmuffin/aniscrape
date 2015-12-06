@@ -10,6 +10,20 @@ needle.defaults({
   follow_max: 10
 })
 
+class ScraperError extends Error
+  constructor: (@message) ->
+    @name = this.constructor.name
+    if Error.captureStackTrace
+      Error.captureStackTrace this, this.constructor
+    else
+      Error.call this
+
+class SearchProviderFormatError extends ScraperError
+  constructor: (provider, @message) ->
+    if provider.name?
+      @message = "[#{provider.name}] #{@message}"
+    super(@message)
+
 class SearchResult
   constructor: (object) ->
     {@seriesName, @seriesUrl, @searchProvider, @isSpecial = false} = object
@@ -18,20 +32,64 @@ class Episode
   constructor: (object) ->
     {@number, @title, @url} = object
 
-class Scraper
-  constructor: (@plugin) ->
+ProviderHelpers =
+  searchFromPage: (url) ->
+    return 'HELLO'
 
-  search: (query) ->
-    Promise.resolve(@plugin.search.page(query)).then (body) =>
+
+class Scraper
+  constructor: ->
+    @providers = {}
+
+  validateProvider: (provider) ->
+    provider._methods = {}
+
+    if !provider.name? || provider.name == ''
+      throw new SearchProviderFormatError(provider, 'No name specified for provider')
+
+    ## Search
+    if !provider.search? || provider.search == null
+      throw new SearchProviderFormatError(provider, 'No search function/string specified.')
+
+    if !provider.search.page? || !provider.search.list? || !provider.search.row?
+      throw new SearchProviderFormatError(provider, 'No search selectors specified.')
+
+    if typeof provider.search.page == 'function'
+      provider._methods.search = provider.search.page
+    else if typeof provider.search.page == 'string'
+      provider._methods.search = (query) ->
+        needle.getAsync(provider.search.page).get('body')
+    else if typeof provider.search.page == 'object'
+      provider._methods.search = (query) ->
+        requestType = provider.search.page.type || 'get'
+        object = {}; object[provider.search.page.param] = query # Need to use to get param name
+        needle.requestAsync(requestType, provider.search.page.url, object).get('body')
+
+
+    provider._methods.search('Haikyuu').then (data) ->
+      console.log data
+
+  use: (provider) ->
+    @providers[provider.name] = provider
+
+  search: (name, provider) ->
+    @fetchSearchResult(name, @providers[provider])
+
+  searchAll: (name) ->
+    Promise.map Object.keys(@providers), (provider) =>
+      @fetchSearchResult(name, @providers[provider])
+
+  fetchSearchResult: (query, provider) ->
+    Promise.resolve(provider.search.page(query)).then (body) ->
       $ = cheerio.load(body)
 
-      list = $(@plugin.search.list)
+      list = $(provider.search.list)
 
-      list = list.map (i, el) =>
+      list = list.map (i, el) ->
         return new SearchResult({
-          seriesName: @plugin.search.row.name($(el))
-          seriesUrl: @plugin.search.row.url($(el))
-          searchProvider: @plugin.name
+          seriesName: provider.search.row.name($(el))
+          seriesUrl: provider.search.row.url($(el))
+          searchProvider: provider
         })
       .get()
 
@@ -39,33 +97,37 @@ class Scraper
         return item.seriesName.toUpperCase().indexOf(query.toUpperCase()) > -1
 
   fetchSeries: (searchResult) ->
-    needle.getAsync(searchResult.seriesUrl).then (resp) =>
+    needle.getAsync(searchResult.seriesUrl).then (resp) ->
       $ = cheerio.load(resp.body)
 
-      episodes = $(@plugin.series.list)
+      episodes = $(searchResult.searchProvider.series.list)
 
-      episodes = episodes.map (i, el) =>
+      episodes = episodes.map (i, el) ->
         return new Episode({
-          title: @plugin.series.row.name($(el))
-          url: @plugin.series.row.url($(el))
-          number: @plugin.series.row.number($(el))
+          title: searchResult.searchProvider.series.row.name($(el))
+          url: searchResult.searchProvider.series.row.url($(el))
+          number: searchResult.searchProvider.series.row.number($(el))
         })
       .get()
 
   fetchVideo: (episode) ->
     needle.getAsync(episode.url).then (resp) =>
       $ = cheerio.load(resp.body)
-
       @plugin.episode($, resp.body)
 
+s = new Scraper()
+s.use(animebam)
+s.use(moetube)
 
-s = new Scraper(animebam)
-s.search('Haikyuu').then (data) ->
-  s.fetchSeries(data[0]).then (episodes) ->
-    console.log episodes
-    s.fetchVideo(episodes[0]).then (data) ->
-      console.log data
-  console.log data
+s.validateProvider(animebam)
+
+# s.search('Haikyuu', 'animebam').then (data) ->
+# s.searchAll('Haikyuu').then (data) ->
+# s.fetchSearchResult('Haikyuu').then (data) ->
+  # s.fetchSeries(data[0]).then (episodes) ->
+    # console.log episodes
+    # s.fetchVideo(episodes[0]).then (data) ->
+  # console.log data
 # s.use animebam
 # s.use moetube
 
