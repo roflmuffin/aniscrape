@@ -4,17 +4,15 @@ cheerio = require 'cheerio'
 
 module.exports =
   name: 'animebam'
-  # baseurl: 'http://animebam.net/'
 
   initialize: ->
     console.log "[#{@name}] loaded successfully."
 
   search:
-    page: (query) ->
+    # page: (query) ->
       # needle.getAsync("http://animebam.net/search?search=#{query}").get('body')
-    page: {url: 'http://animebam.net/search', param: 'search', type: 'get'}
+    page: {url: 'http://animebam.net/search', param: 'search'}
     # page: 'http://www.animebam.net/series'
-
 
     list: '.mse'
     row:
