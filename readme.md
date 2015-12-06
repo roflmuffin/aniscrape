@@ -37,3 +37,30 @@ scraper.search('Haikyuu', 'animebam').then(function (results) {
 Aniscrape uses a modular design whereby you simply provide the scraping structure of your website (urls, html class names etc.) in the form of a search provider module, and aniscrape will use that when providing search results, episode lists and more.
 
 You can see the current structure of search providers in the [provider guide.](provider-guide.md)
+
+## Todo
+
+#### Provider API
+
+There are still more options I need to include for use in the provider API, such as:
+
+- The ability to return your own list of search results rather than a jQuery selector
+- Support sites that have episode lists on a different page to their anime page (allow promise based episode returns)
+
+#### Overall features that need to be included
+
+Some must have features for the base scraper in general:
+
+- Ability to control more aspects of the web requests (instanced needle modules per provider) so that cookies & headers can be modified.
+- A promise based intialise method for sites that have things that delay immediate scraping (CloudFlare & KissAnime are one example)
+- Throttling and rate limiting requests. Currently requests are sent immediately, this is less than ideal especially if you want to bulk grab video URLs.
+
+## Contributing
+
+The project is currently in its infancy so I don't really have any contributor rules. The source is written in CoffeeScript and I would prefer it remain that way. CoffeeScript lends itself well to the key value based structure of the provider API as it exists currently.
+
+Open to all issues and pull requests, submit away.
+
+## License
+
+MIT. See LICENSE.
