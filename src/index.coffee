@@ -12,7 +12,7 @@ needle.defaults({
 
 class SearchResult
   constructor: (object) ->
-    {@seriesName, @seriesUrl, @searchProvider, @isSpecial = false} = object
+    {@seriesName, @seriesUrl, @searchProvider, @episodes = [], @isSpecial = false} = object
 
 class Episode
   constructor: (object) ->
@@ -69,6 +69,9 @@ class Scraper
           searchProvider: searchResult.searchProvider
         })
       .get()
+
+      searchResult.episodes = episodes
+      return searchResult
 
   fetchVideo: (episode) ->
     needle.getAsync(episode.url).then (resp) ->
