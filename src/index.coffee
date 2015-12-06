@@ -2,6 +2,7 @@ Promise = require 'bluebird'
 needle = Promise.promisifyAll(require 'needle')
 cheerio = require 'cheerio'
 _ = require 'lodash'
+Bottleneck = require 'bottleneck'
 
 Errors = require './errors'
 Validation = require './provider/validation'
@@ -21,6 +22,7 @@ class Episode
 class Scraper
   constructor: ->
     @providers = {}
+    @limiter = new Bottleneck(0, 500)
 
   use: (provider) ->
     if Validation.Logic.ValidateProvider(provider)
@@ -35,7 +37,7 @@ class Scraper
       @fetchSearchResult(name, @providers[provider])
 
   fetchSearchResult: (query, provider) ->
-    provider._methods.search(query).then (body) ->
+    @limiter.schedule(provider._methods.search, query).then (body) ->
       $ = cheerio.load(body)
 
       list = $(provider.search.list)
