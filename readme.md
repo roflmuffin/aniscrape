@@ -30,6 +30,13 @@ scraper.search('Haikyuu', 'animebam').then(function (results) {
     })
   });
 })
+
+// You can also do searchAll to search through all providers.
+// When you call fetchSeries & fetchVideos, aniscrape will detect the provider automatically
+// and use the correct methods to retrieve it.
+scraper.searchAll('Haikyuu').then(function(results) {
+  console.log(results); // Will return all results if more than one provider is supplied.
+});
 ```
 
 ## Providers
