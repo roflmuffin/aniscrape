@@ -4,39 +4,164 @@ cheerio = require 'cheerio'
 _ = require 'lodash'
 
 animebam = require('./exampleplugin.coffee')
+moetube = require('./moetube.coffee')
 
 needle.defaults({
   follow_max: 10
 })
 
-search = (name, filter) ->
-  if !filter? && !filter.page?
-    return
+class SearchResult
+  constructor: (object) ->
+    {@seriesName, @seriesUrl, @searchProvider, @isSpecial = false} = object
 
-  pageRetrieved = (err, body) ->
-    $ = cheerio.load(body)
+class Episode
+  constructor: (object) ->
+    {@number, @title, @url} = object
 
-    list = $(filter.list)
+class Scraper
+  constructor: (@plugin) ->
 
-    list = list.map (i, el) ->
-      finalObj = {}
-      for k,v of filter.row
-        finalObj[k] = v($(this))
-      return finalObj
-    .get()
+  search: (query) ->
+    Promise.resolve(@plugin.search.page(query)).then (body) =>
+      $ = cheerio.load(body)
 
-    list = _.filter list, (item) ->
-      return item.name.toUpperCase().indexOf(name.toUpperCase()) > -1
-    console.log list
+      list = $(@plugin.search.list)
 
-  if typeof filter.page == 'function'
-    filter.page name, pageRetrieved
-  else if typeof filter.page == 'string'
-    needle.get filter.page, (err, resp) ->
-      pageRetrieved(err, resp.body)
+      list = list.map (i, el) =>
+        return new SearchResult({
+          seriesName: @plugin.search.row.name($(el))
+          seriesUrl: @plugin.search.row.url($(el))
+          searchProvider: @plugin.name
+        })
+      .get()
+
+      list = _.filter list, (item) ->
+        return item.seriesName.toUpperCase().indexOf(query.toUpperCase()) > -1
+
+  fetchSeries: (searchResult) ->
+    needle.getAsync(searchResult.seriesUrl).then (resp) =>
+      $ = cheerio.load(resp.body)
+
+      episodes = $(@plugin.series.list)
+
+      episodes = episodes.map (i, el) =>
+        return new Episode({
+          title: @plugin.series.row.name($(el))
+          url: @plugin.series.row.url($(el))
+          number: @plugin.series.row.number($(el))
+        })
+      .get()
+
+  fetchVideo: (episode) ->
+    needle.getAsync(episode.url).then (resp) =>
+      $ = cheerio.load(resp.body)
+
+      @plugin.episode($, resp.body)
 
 
-search('Haikyuu', animebam.search)
+s = new Scraper(animebam)
+s.search('Haikyuu').then (data) ->
+  s.fetchSeries(data[0]).then (episodes) ->
+    console.log episodes
+    s.fetchVideo(episodes[0]).then (data) ->
+      console.log data
+  console.log data
+# s.use animebam
+# s.use moetube
+
+# class Scraper
+#   constructor: (@plugin) ->
+
+#   search: (query) ->
+#     Promise.resolve(@plugin.search.page(query)).then (body) =>
+#       $ = cheerio.load(body)
+
+#       list = $(@plugin.search.list)
+
+#       list = list.map (i, el) =>
+#         finalObj = {}
+#         for k,v of @plugin.search.row
+#           finalObj[k] = v($(el))
+#         # return finalObj
+#         return new SearchResult({
+#           seriesName: @plugin.search.row.name($(el))
+#           seriesUrl: @plugin.search.row.url($(el))
+#           searchProvider: @plugin.name
+#         })
+#       .get()
+
+
+
+# console.log s
+
+# class Scraper
+#   constructor: ->
+#     @_loadedPlugins = []
+
+#   use: (plugin) ->
+#     @_loadedPlugins.push plugin
+
+#   search: (query) ->
+#     Promise.map @_loadedPlugins, (plugin) ->
+#       Promise.resolve(plugin.search.page(query)).then (body) ->
+#         $ = cheerio.load(body)
+
+#         list = $(plugin.search.list)
+
+#         list = list.map (i, el) ->
+#           finalObj = {}
+#           for k,v of plugin.search.row
+#             finalObj[k] = v($(this))
+#           return finalObj
+#         .get()
+
+#         list = _.filter list, (item) ->
+#           return item.name.toUpperCase().indexOf(query.toUpperCase()) > -1
+
+#         return {
+#           scraper: plugin.name
+#           results: list
+#         }
+#     .then (results) ->
+#       console.log results
+
+
+
+# s.search 'Haikyuu'
+
+#   console.log 'Animebam initialized.'
+
+# prom.then (value) ->
+#   console.log value
+
+# search = (name, filter) ->
+#   if !filter? && !filter.page?
+#     return
+
+#   pageRetrieved = (err, body) ->
+#     $ = cheerio.load(body)
+
+#     list = $(filter.list)
+
+#     list = list.map (i, el) ->
+#       finalObj = {}
+#       for k,v of filter.row
+#         finalObj[k] = v($(this))
+#       return finalObj
+#     .get()
+
+#     list = _.filter list, (item) ->
+#       return item.name.toUpperCase().indexOf(name.toUpperCase()) > -1
+#     console.log list
+
+#   if typeof filter.page == 'function'
+#     filter.page name, pageRetrieved
+#   else if typeof filter.page == 'string'
+#     needle.get filter.page, (err, resp) ->
+#       pageRetrieved(err, resp.body)
+
+
+# search('Haikyuu', animebam.search)
 
 # searchObject =
 #   search: 'http://www.animebam.net/series'
