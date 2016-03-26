@@ -44,7 +44,7 @@ class Scraper
         return new SearchResult({
           seriesName: provider.search.row.name($(el))
           seriesUrl: provider.search.row.url($(el))
-          searchProvider: provider
+          searchProvider: provider.name
         })
       .get()
 
@@ -52,21 +52,22 @@ class Scraper
         return item.seriesName.toUpperCase().indexOf(query.toUpperCase()) > -1
 
   fetchSeries: (searchResult) ->
-    needle.getAsync(searchResult.seriesUrl).then (resp) ->
+    needle.getAsync(searchResult.seriesUrl).then (resp) =>
       $ = cheerio.load(resp.body)
 
-      episodes = $(searchResult.searchProvider.series.list)
+      provider = @providers[searchResult.searchProvider]
+      episodes = $(provider.series.list)
 
       episodes = episodes.map (i, el) ->
-        if !searchResult.searchProvider.series.row.number?
+        if !provider.series.row.number?
           number = i+1
         else
-          number = searchResult.searchProvider.series.row.number($(el))
+          number = provider.series.row.number($(el))
         return new Episode({
-          title: searchResult.searchProvider.series.row.name($(el))
-          url: searchResult.searchProvider.series.row.url($(el))
+          title: provider.series.row.name($(el))
+          url: provider.series.row.url($(el))
           number: number
-          searchProvider: searchResult.searchProvider
+          searchProvider: provider.name
         })
       .get()
 
@@ -74,8 +75,9 @@ class Scraper
       return searchResult
 
   fetchVideo: (episode) ->
-    needle.getAsync(episode.url).then (resp) ->
+    needle.getAsync(episode.url).then (resp) =>
       $ = cheerio.load(resp.body)
-      episode.searchProvider.episode($, resp.body)
+      console.log(episode.url)
+      @providers[episode.searchProvider].episode($, resp.body)
 
 module.exports = Scraper
