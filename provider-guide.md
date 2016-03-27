@@ -25,7 +25,6 @@ To view an example, you can see the provided animebam search provider located [h
   // Below is the equivalent of http://animewebsite/search?name=AnimeName
   page: {url: 'http://animewebsite/search', param: 'name'}
 
-  // NOT IMPLEMENTED
   // This function must return a list of jQuery objects that represent a search result item
   //
   // $ = Cheerio page object
@@ -67,7 +66,7 @@ To view an example, you can see the provided animebam search provider located [h
   },
 
   // You can also pass in a jQuery selector as a string
-  list: '.row-item', 
+  list: '.row-item',
 
   // Almost identical to the search row parameter.
   // Key Value function pair that turns row items into usable objects
@@ -93,7 +92,7 @@ To view an example, you can see the provided animebam search provider located [h
   //
   // {label: '480p', url: 'http://video.com/file.mp4'}
   episode: function ($, body) {
-    // Because episode pages vary greatly we request that 
+    // Because episode pages vary greatly we request that
     // you parse the video urls manually.
   }
 }
