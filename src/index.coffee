@@ -25,9 +25,13 @@ class Scraper
     @limiter = new Bottleneck(0, 500)
 
   use: (provider) ->
-    if Validation.Logic.ValidateProvider(provider)
-      @providers[provider.name] = provider
-      provider.initialize()
+    return new Promise (resolve, reject) =>
+      try
+        if Validation.Logic.ValidateProvider(provider)
+          @providers[provider.name] = provider
+          return resolve(provider.initialize())
+      catch error
+        reject(error)
 
   search: (name, provider) ->
     @fetchSearchResult(name, @providers[provider])
@@ -79,7 +83,6 @@ class Scraper
   fetchVideo: (episode) ->
     needle.getAsync(episode.url).then (resp) =>
       $ = cheerio.load(resp.body)
-      console.log(episode.url)
       @providers[episode.searchProvider].episode($, resp.body)
 
 module.exports = Scraper
