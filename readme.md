@@ -51,7 +51,6 @@ You can see the current structure of search providers in the [provider guide.](p
 
 There are still more options I need to include for use in the provider API, such as:
 
-- The ability to return your own list of search results rather than a jQuery selector
 - Support sites that have episode lists on a different page to their anime page (allow promise based episode returns)
 
 #### Overall features that need to be included

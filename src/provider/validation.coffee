@@ -11,6 +11,9 @@ Helpers =
     object = {}; object[this.page.param] = query # Need to use to get param name
     needle.requestAsync(requestType, this.page.url, object).get('body')
 
+  ListFromSearchPage: ($, body) ->
+    return $(this.list)
+
 Logic =
   ValidateProvider: (provider) ->
     provider._methods = {}
@@ -47,6 +50,14 @@ Logic =
     if !provider.series.list? || !provider.series.row?
       throw new Errors.SearchProviderFormatError(
         provider, 'No series selectors specified.')
+
+    # BYO Search Result function
+    if typeof provider.search.list == 'function'
+      provider._methods.list = provider.search.list
+
+    # jQuery selector specified
+    else if typeof provider.search.list == 'string'
+      provider._methods.list = _.bind(Helpers.ListFromSearchPage, provider.search)
 
     if !provider.series.row.name? || !provider.series.row.url?
       throw new Errors.SearchProviderFormatError(

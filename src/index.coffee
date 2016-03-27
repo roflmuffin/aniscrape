@@ -44,7 +44,7 @@ class Scraper
     @limiter.schedule(provider._methods.search, query).then (body) ->
       $ = cheerio.load(body)
 
-      list = $(provider.search.list)
+      list = provider._methods.list($, body)
 
       list = list.map (i, el) ->
         return new SearchResult({
