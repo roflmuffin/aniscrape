@@ -5,7 +5,8 @@ To view an example, you can see the provided animebam search provider located [h
 ### Filters that must be provided
   - Search URL/Method & Method/Object to parse results
   - Anime Page Method/Object to parse episode list
-  - Episode Page Methhod/Object to parse video links
+  - Episode Page Method/Object to parse video links
+
 ## General information
 ```js
 {
