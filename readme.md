@@ -20,16 +20,20 @@ var Aniscrape = require('aniscrape');
 var animebam = require('aniscrape-animebam'); // Check source on GitHub for more info.
 
 var scraper = new Aniscrape();
-scraper.use(animebam);
-
-scraper.search('Haikyuu', 'animebam').then(function (results) {
-  scraper.fetchSeries(results[0]).then(function(anime) {
-    scraper.fetchVideo(anime.episodes[0]).then(function(video) {
-      console.log(video);
-      // Video is a list of direct video links and quality labels.
+scraper.use(animebam)
+.then(function() {
+  scraper.search('Haikyuu', 'animebam').then(function (results) {
+    console.log(results)
+    scraper.fetchSeries(results[2]).then(function(anime) {
+      console.log(anime)
+      scraper.fetchVideo(anime.episodes[1]).then(function(video) {
+        // Video is a list of direct video links and quality labels.
+        console.log(video)
+      })
     })
-  });
+  })
 })
+
 
 // You can also do searchAll to search through all providers.
 // When you call fetchSeries & fetchVideos, aniscrape will detect the provider automatically

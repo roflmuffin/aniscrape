@@ -41,44 +41,44 @@ class Scraper
       @fetchSearchResult(name, @providers[provider])
 
   fetchSearchResult: (query, provider) ->
-    @limiter.schedule(provider._methods.search, query).then (body) ->
+    @limiter.schedule(provider.methods.search, query).then (body) ->
       $ = cheerio.load(body)
 
-      list = provider._methods.list($, body)
+      provider.methods.list($, body).then (list) ->
 
-      list = list.map (i, el) ->
-        return new SearchResult({
-          seriesName: provider.search.row.name($(el))
-          seriesUrl: provider.search.row.url($(el))
-          searchProvider: provider.name
-        })
-      .get()
+        list = list.map (i, el) ->
+          return new SearchResult({
+            seriesName: provider.search.row.name($(el))
+            seriesUrl: provider.search.row.url($(el))
+            searchProvider: provider.name
+          })
+        .get()
 
-      list = _.filter list, (item) ->
-        return item.seriesName.toUpperCase().indexOf(query.toUpperCase()) > -1
+        list = _.filter list, (item) ->
+          return item.seriesName.toUpperCase().indexOf(query.toUpperCase()) > -1
 
   fetchSeries: (searchResult) ->
     needle.getAsync(searchResult.seriesUrl).then (resp) =>
       $ = cheerio.load(resp.body)
 
       provider = @providers[searchResult.searchProvider]
-      episodes = $(provider.series.list)
 
-      episodes = episodes.map (i, el) ->
-        if !provider.series.row.number?
-          number = i+1
-        else
-          number = provider.series.row.number($(el))
-        return new Episode({
-          title: provider.series.row.name($(el))
-          url: provider.series.row.url($(el))
-          number: number
-          searchProvider: provider.name
-        })
-      .get()
+      episodes = provider.methods.seriesList($, resp.body).then (episodes) ->
+        episodes = episodes.map (i, el) ->
+          if !provider.series.row.number?
+            number = i+1
+          else
+            number = provider.series.row.number($(el))
+          return new Episode({
+            title: provider.series.row.name($(el))
+            url: provider.series.row.url($(el))
+            number: number
+            searchProvider: provider.name
+          })
+        .get()
 
-      searchResult.episodes = episodes
-      return searchResult
+        searchResult.episodes = episodes
+        return searchResult
 
   fetchVideo: (episode) ->
     needle.getAsync(episode.url).then (resp) =>
