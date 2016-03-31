@@ -25,7 +25,7 @@ Methods =
 Helpers =
   BindFunction: (methods, param, provider) ->
     if typeof param == 'function'
-      bound = param
+      bound = _.bind(param, provider)
     else
       bound = _.partial(methods[typeof param], param, provider)
     return Promise.method(bound)
