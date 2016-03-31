@@ -49,6 +49,13 @@ Aniscrape uses a modular design whereby you simply provide the scraping structur
 
 You can see the current structure of search providers in the [provider guide.](provider-guide.md)
 
+### Available providers
+
+There are currently two created providers for aniscrape as seen below. If you create one, please let me know and I will add it to the list.
+
+- [animebam](https://github.com/roflmuffin/aniscrape-animebam)
+- [KissAnime](https://github.com/roflmuffin/aniscrape-kissanime)
+
 ## Todo
 
 #### Provider API
