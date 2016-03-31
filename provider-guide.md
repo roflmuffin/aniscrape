@@ -1,6 +1,7 @@
 ## Example
 
-To view an example, you can see the provided animebam search provider located [here.](https://github.com/roflmuffin/aniscrape-animebam)
+To view an example, you can see the provided animebam search provider located [here.](https://github.com/roflmuffin/aniscrape-animebam).
+Use the example above and the structure below to design your own provider sites.
 
 ### Filters that must be provided
   - Search URL/Method & Method/Object to parse results
@@ -22,14 +23,12 @@ To view an example, you can see the provided animebam search provider located [h
 ```js
 {
   // This function must return search results based on query
-  //
-  // callback(null, body)
   page: function (query) {
     // Must return a promise that returns a body based on query
   },
 
   // You can also specify search as a string
-  // We will just run a GET request on it and return the body
+  // We will just run a GET request on it and return the body (which is then filtered)
   page: 'http://animewebsite.com/list',
 
   // Another option is to supply the url and param name to perform a GET query
@@ -40,7 +39,6 @@ To view an example, you can see the provided animebam search provider located [h
   //
   // $ = Cheerio page object
   // body = Raw page body
-  // NOT IMPLEMENTED
   list: function ($, body) {
     return $(".row-item")
   },
@@ -66,12 +64,10 @@ To view an example, you can see the provided animebam search provider located [h
 ## Anime Page Structure
 ```js
 {
-  // NOT IMPLEMENTED
   // This function must return a list of jQuery objects that represent a search result item
   //
   // $ = Cheerio page object
   // body = Raw page body
-  // NOT IMPLEMENTED
   list: function ($, body) {
     return $(".row-item")
   },
@@ -88,6 +84,7 @@ To view an example, you can see the provided animebam search provider located [h
     url: function (el) {
       return el.attr('href').text()
     },
+    // Number is optional, if not specified it will simply be the index+1
     number: function (el) {
       return el.find('.episode-name').text().match(/(?=[^\s]*$)\d+/)[0]
     }
