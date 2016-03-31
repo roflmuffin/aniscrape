@@ -61,8 +61,6 @@ There are still more options I need to include for use in the provider API, such
 
 Some must have features for the base scraper in general:
 
-- Ability to control more aspects of the web requests (instanced needle modules per provider) so that cookies & headers can be modified.
-- A promise based intialise method for sites that have things that delay immediate scraping (CloudFlare & KissAnime are one example)
 - Throttling and rate limiting requests. Currently requests are sent immediately, this is less than ideal especially if you want to bulk grab video URLs.
 
 ## Contributing

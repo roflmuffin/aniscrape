@@ -6,6 +6,16 @@ To view an example, you can see the provided animebam search provider located [h
   - Search URL/Method & Method/Object to parse results
   - Anime Page Method/Object to parse episode list
   - Episode Page Methhod/Object to parse video links
+## General information
+```js
+{
+  // HTTP options to use for requests
+  // See https://github.com/tomas/needle
+  http_options: {
+    follow_max: 5
+  }
+}
+```
 
 ## Search Object Structure
 ```js

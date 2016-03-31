@@ -58,10 +58,9 @@ class Scraper
           return item.seriesName.toUpperCase().indexOf(query.toUpperCase()) > -1
 
   fetchSeries: (searchResult) ->
-    needle.getAsync(searchResult.seriesUrl).then (resp) =>
+    provider = @providers[searchResult.searchProvider]
+    needle.getAsync(searchResult.seriesUrl, provider.http_options).then (resp) =>
       $ = cheerio.load(resp.body)
-
-      provider = @providers[searchResult.searchProvider]
 
       episodes = provider.methods.seriesList($, resp.body).then (episodes) ->
         episodes = episodes.map (i, el) ->
@@ -81,8 +80,9 @@ class Scraper
         return searchResult
 
   fetchVideo: (episode) ->
-    needle.getAsync(episode.url).then (resp) =>
+    provider = @providers[episode.searchProvider]
+    needle.getAsync(episode.url, provider.http_options).then (resp) =>
       $ = cheerio.load(resp.body)
-      @providers[episode.searchProvider].episode($, resp.body)
+      provider.methods.episode($, resp.body)
 
 module.exports = Scraper

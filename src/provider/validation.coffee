@@ -6,33 +6,34 @@ _ = require 'lodash'
 Methods =
   Search:
     Page:
-      string: (str, query) ->
-        needle.getAsync(str.page).get('body')
-      object: (obj, query) ->
+      string: (str, provider, query) ->
+        needle.getAsync(str.page, provider.http_options).get('body')
+      object: (obj, provider, query) ->
         requestType = obj.type || 'get'
         param = {}; param[obj.param] = query # Create object with KV-Pair of query
-        needle.requestAsync(requestType, obj.url, param).get('body')
+        needle.requestAsync(requestType, obj.url, param, provider.http_options).get('body')
 
     SearchResult:
-      string: (str, $, body) ->
+      string: (str, provider, $, body) ->
         return $(str)
 
   Series:
     List:
-      string: (str, $, body) ->
+      string: (str, provider, $, body) ->
         return $(str)
 
 Helpers =
-  BindFunction: (methods, param) ->
+  BindFunction: (methods, param, provider) ->
     if typeof param == 'function'
       bound = param
     else
-      bound = _.partial(methods[typeof param], param)
+      bound = _.partial(methods[typeof param], param, provider)
     return Promise.method(bound)
 
 Logic =
   ValidateProvider: (provider) ->
     provider.methods = {}
+    provider.http_options = provider.http_options || {}
 
     if !provider.name? || provider.name == ''
       throw new Errors.SearchProviderFormatError(
@@ -62,9 +63,10 @@ Logic =
       throw new Errors.SearchProviderFormatError(
         provider, "Provider must expose 'episode' function to parse video URLs")
 
-    provider.methods.search = Helpers.BindFunction(Methods.Search.Page, provider.search.page)
-    provider.methods.list = Helpers.BindFunction(Methods.Search.SearchResult, provider.search.list)
-    provider.methods.seriesList = Helpers.BindFunction(Methods.Series.List, provider.series.list)
+    provider.methods.search = Helpers.BindFunction(Methods.Search.Page, provider.search.page, provider)
+    provider.methods.list = Helpers.BindFunction(Methods.Search.SearchResult, provider.search.list, provider)
+    provider.methods.seriesList = Helpers.BindFunction(Methods.Series.List, provider.series.list, provider)
+    provider.methods.episode = provider.episode
 
     return true
 
