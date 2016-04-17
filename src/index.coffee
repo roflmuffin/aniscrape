@@ -63,7 +63,6 @@ class Scraper
       $ = cheerio.load(resp.body)
 
       episodes = provider.methods.seriesList($, resp.body).then (episodes) ->
-        console.log episodes
         episodes = episodes.map (i, el) ->
           if !provider.series.row.number?
             number = i+1
