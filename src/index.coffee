@@ -26,12 +26,18 @@ class Scraper
 
   use: (provider) ->
     return new Promise (resolve, reject) =>
-      try
-        if Validation.Logic.ValidateProvider(provider)
-          @providers[provider.name] = provider
-          return resolve(provider.initialize())
-      catch error
-        reject(error)
+      if provider.length != undefined
+        Promise.each provider, (item) =>
+          if Validation.Logic.ValidateProvider(item)
+            @providers[item.name] = item
+            return Promise.resolve(item.initialize())
+      else
+        try
+          if Validation.Logic.ValidateProvider(provider)
+            @providers[provider.name] = provider
+            return resolve(provider.initialize())
+        catch error
+          reject(error)
 
   search: (name, provider) ->
     @fetchSearchResult(name, @providers[provider])
